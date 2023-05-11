@@ -66,7 +66,7 @@ resource "aws_s3_bucket_website_configuration" "homepage-s3-bucket" {
   }
 }
 
-data "aws_iam_policy_document" "github-deployment-s3-role-document" {
+data "aws_iam_policy_document" "github-deployment-frontend-s3-role-document" {
   statement {
     actions = ["s3:ListBucket","s3:GetObject", "s3:PutObject"]
     resources = [aws_s3_bucket.homepage-bucket.arn,"${aws_s3_bucket.homepage-bucket.arn}/*"]
@@ -75,7 +75,7 @@ data "aws_iam_policy_document" "github-deployment-s3-role-document" {
 }
 
 
-data "aws_iam_policy_document" "github-deployment-cloudefront-role-document" {
+data "aws_iam_policy_document" "github-deployment-frontend-cloudefront-role-document" {
   statement {
     actions = ["cloudfront:CreateInvalidation"]
     resources = [aws_cloudfront_distribution.homepage-cloudefront.arn]
@@ -83,7 +83,7 @@ data "aws_iam_policy_document" "github-deployment-cloudefront-role-document" {
   }
 }
 
-data "aws_iam_policy_document" "github-deployment-assume-role" {
+data "aws_iam_policy_document" "github-deployment-fronted-assume-role" {
   statement {
     actions = [
       "sts:AssumeRoleWithWebIdentity"
@@ -108,31 +108,31 @@ data "aws_iam_policy_document" "github-deployment-assume-role" {
   }
 }
 
-resource "aws_iam_role" "github-deployment-role" {
-  name               = "github-deployment-role"
-  assume_role_policy = data.aws_iam_policy_document.github-deployment-assume-role.json
+resource "aws_iam_role" "github-deployment-frontend-role" {
+  name               = "github-deployment-frontend-role"
+  assume_role_policy = data.aws_iam_policy_document.github-deployment-fronted-assume-role.json
 }
 
-resource "aws_iam_policy" "github-deployment-s3-role-policy" {
-    name        = "github-deployment-s3-role-policy"
+resource "aws_iam_policy" "github-deployment-frontend-s3-role-policy" {
+    name        = "github-deployment-frontend-s3-role-policy"
     path        = "/"
-    policy      = data.aws_iam_policy_document.github-deployment-s3-role-document.json
+    policy      = data.aws_iam_policy_document.github-deployment-frontend-s3-role-document.json
 }
 
-resource "aws_iam_policy" "github-deployment-cloudefront-role-policy" {
-    name        = "github-deployment-cloudefront-role-policy"
+resource "aws_iam_policy" "github-deployment-frontend-cloudefront-role-policy" {
+    name        = "github-deployment-frontend-cloudefront-role-policy"
     path        = "/"
-    policy      = data.aws_iam_policy_document.github-deployment-cloudefront-role-document.json
+    policy      = data.aws_iam_policy_document.github-deployment-frontend-cloudefront-role-document.json
 }
 
-resource "aws_iam_role_policy_attachment" "github-deployment-s3-attach_policy" {
-  role       = "${aws_iam_role.github-deployment-role.name}"
-  policy_arn = aws_iam_policy.github-deployment-s3-role-policy.arn
+resource "aws_iam_role_policy_attachment" "github-deployment-frontend-s3-attach_policy" {
+  role       = "${aws_iam_role.github-deployment-frontend-role.name}"
+  policy_arn = aws_iam_policy.github-deployment-frontend-s3-role-policy.arn
 }
 
-resource "aws_iam_role_policy_attachment" "github-deployment-cloudefront-attach_policy" {
-  role       = "${aws_iam_role.github-deployment-role.name}"
-  policy_arn = aws_iam_policy.github-deployment-cloudefront-role-policy.arn
+resource "aws_iam_role_policy_attachment" "github-deployment-frontend-cloudefront-attach_policy" {
+  role       = "${aws_iam_role.github-deployment-frontend-role.name}"
+  policy_arn = aws_iam_policy.github-deployment-frontend-cloudefront-role-policy.arn
 }
 
 

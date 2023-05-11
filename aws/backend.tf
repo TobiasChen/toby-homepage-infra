@@ -107,6 +107,59 @@ resource "aws_lambda_function" "homepage-visitorCount-lambda" {
   }
 }
 
+
+data "aws_iam_policy_document" "github-deployment-backend-lambda-role-document" {
+  statement {
+    actions = ["lambda:UpdateFunctionCode"]
+    resources = [aws_lambda_function.homepage-visitorCount-lambda.arn]
+    
+  }
+}
+
+data "aws_iam_policy_document" "github-deployment-backend-assume-role" {
+  statement {
+    actions = [
+      "sts:AssumeRoleWithWebIdentity"
+    ]
+    principals {
+      type        = "Federated"
+      identifiers = ["arn:aws:iam::221675488713:oidc-provider/token.actions.githubusercontent.com"]
+    }
+
+    condition {
+      test = "StringLike"
+      variable =  "token.actions.githubusercontent.com:sub"
+      values = [ "repo:TobiasChen/toby-homepage-backend:*"]
+    }
+
+    condition {
+      test = "StringEquals"
+      variable = "token.actions.githubusercontent.com:aud"
+      values = ["sts.amazonaws.com"]
+    }
+
+  }
+}
+
+resource "aws_iam_role" "github-deployment-backend-role" {
+  name               = "github-deployment-backend-role"
+  assume_role_policy = data.aws_iam_policy_document.github-deployment-backend-assume-role.json
+}
+
+resource "aws_iam_policy" "github-deployment-backend-role-policy" {
+    name        = "github-deployment-backend-role-policy"
+    path        = "/"
+    policy      = data.aws_iam_policy_document.github-deployment-backend-lambda-role-document.json
+}
+
+resource "aws_iam_role_policy_attachment" "github-deployment-backend-attach_policy" {
+  role       = "${aws_iam_role.github-deployment-backend-role.name}"
+  policy_arn = aws_iam_policy.github-deployment-backend-role-policy.arn
+}
+
+
+
+
 # API Gateway for Lambda
 
 
@@ -156,3 +209,5 @@ resource "aws_lambda_permission" "homepage-visitorCount-api-lambda-permission" {
 output "api_url" {
   value = aws_apigatewayv2_api.homepage-visitorCount-api.api_endpoint
 }
+
+

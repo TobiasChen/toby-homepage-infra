@@ -214,7 +214,5 @@ resource "aws_lambda_permission" "homepage-visitorCount-api-lambda-permission" {
 
 
 output "api_url" {
-  value = aws_apigatewayv2_api.homepage-visitorCount-api.api_endpoint
+  value = aws_apigatewayv2_domain_name.homepage-visitorCount-api-domain.domain_name_configuration[0].target_domain_name
 }
-
-

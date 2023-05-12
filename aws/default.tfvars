@@ -1,4 +1,4 @@
-url = "home2.tobias-chen.de"
+url = "home.tobias-chen.de"
 api_url = "api.tobias-chen.de"
 
 website_name = "toby"

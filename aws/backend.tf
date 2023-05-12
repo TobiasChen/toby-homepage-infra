@@ -91,7 +91,7 @@ resource "aws_lambda_function" "homepage-visitorCount-lambda" {
   }
 
   function_name                  = "homepage-visitorCount-lambda"
-  handler                        = "visitorCount.handler"
+  handler                        = "src/visitorCount.handler"
   filename                       = "homepage-visitorCount-payload.zip"
   memory_size                    = "128"
   package_type                   = "Zip"
@@ -183,14 +183,29 @@ resource "aws_apigatewayv2_integration" "homepage-visitorCount-api-integration" 
   integration_uri           = aws_lambda_function.homepage-visitorCount-lambda.invoke_arn
 }
 
-resource "aws_apigatewayv2_route" "homepage-visitorCount-api-Route" {
+resource "aws_apigatewayv2_route" "homepage-visitorCount-api-route" {
   api_id = aws_apigatewayv2_api.homepage-visitorCount-api.id
 
   route_key = "ANY /visitorCount"
   target    = "integrations/${aws_apigatewayv2_integration.homepage-visitorCount-api-integration.id}"
 }
 
-resource "aws_apigatewayv2_api_mapping" "example" {
+
+variable "api_url" {
+  type = string
+}
+
+resource "aws_apigatewayv2_domain_name" "homepage-visitorCount-api-domain" {
+  domain_name = var.api_url
+
+  domain_name_configuration {
+    certificate_arn = "${aws_acm_certificate.website-api-domain-cert.arn}"
+    endpoint_type   = "REGIONAL"
+    security_policy = "TLS_1_2"
+  }
+}
+
+resource "aws_apigatewayv2_api_mapping" "homepage-visitorCount-api-mapping" {
   api_id      = aws_apigatewayv2_api.homepage-visitorCount-api.id
   domain_name = aws_apigatewayv2_domain_name.homepage-visitorCount-api-domain.id
   stage       = aws_apigatewayv2_stage.homepage-visitorCount-api-stage.id

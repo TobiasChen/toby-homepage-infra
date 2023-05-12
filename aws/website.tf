@@ -192,7 +192,7 @@ resource "aws_cloudfront_distribution" "homepage-cloudefront" {
   retain_on_delete = "false"
 
   viewer_certificate {
-    acm_certificate_arn            = "${aws_acm_certificate.website-domain-cert.arn}"
+    acm_certificate_arn            = "${aws_acm_certificate.website-cloudflare-domain-cert.arn}"
     cloudfront_default_certificate = "false"
     minimum_protocol_version       = "TLSv1.2_2021"
     ssl_support_method             = "sni-only"

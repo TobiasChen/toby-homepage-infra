@@ -20,18 +20,6 @@ resource "aws_dynamodb_table" "homepage-dynamodb" {
   write_capacity = "1"
 }
 
-resource "aws_dynamodb_table_item" "homepage-visitorCount-dynamodb-item" {
-  table_name = aws_dynamodb_table.homepage-dynamodb.name
-  hash_key   = aws_dynamodb_table.homepage-dynamodb.hash_key
-
-  item = <<ITEM
-{
-  "id": {"N": "0"},
-  "visits": {"N": "0"}
-}
-ITEM
-}
-
 # Lambda function
 
 data "aws_iam_policy_document" "visitorCount-lambda-role-document" {
@@ -59,7 +47,7 @@ data "aws_iam_policy_document" "visitorCount-lambda-assume-role" {
 data "archive_file" "visitorCount-payload" {
   type        = "zip"
   source_file = "./lambda/visitorCount.js"
-  output_path = "homepage-visitorCount-payload.zip"
+  output_path = "./lambda/homepage-visitorCount-payload.zip"
 }
 
 resource "aws_iam_role" "visitorCount-lambda-role" {
@@ -92,7 +80,7 @@ resource "aws_lambda_function" "homepage-visitorCount-lambda" {
 
   function_name                  = "homepage-visitorCount-lambda"
   handler                        = "src/visitorCount.handler"
-  filename                       = "homepage-visitorCount-payload.zip"
+  filename                       = "./lambda/homepage-visitorCount-payload.zip"
   memory_size                    = "128"
   package_type                   = "Zip"
   reserved_concurrent_executions = "-1"
@@ -167,6 +155,10 @@ resource "aws_apigatewayv2_api" "homepage-visitorCount-api" {
     name          = "homepage-visitorCount-api"
     protocol_type = "HTTP"
     disable_execute_api_endpoint = true
+    cors_configuration {
+      allow_origins = ["https://${var.url}"]
+      allow_methods = ["GET", "OPTIONS"]
+    }
 }
 
 resource "aws_apigatewayv2_stage" "homepage-visitorCount-api-stage" {
